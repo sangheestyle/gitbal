@@ -20,11 +20,11 @@ class Generator:
     def get_commit_list(self):
         os.chdir(self._path)
 
-        SEPARATOR = "!!!@@"
+        SEPARATOR = ";;;"
         format_string = ""
         pattern_string = ""
 
-        fields = ["%s", "%an", "%ad"]
+        fields = ["%h", "%s", "%an", "%ad"]
         for f in fields:
             format_string = format_string + f + SEPARATOR
             pattern_string = pattern_string + "(.+)" + SEPARATOR
@@ -33,13 +33,38 @@ class Generator:
         p = Popen(git_log, stdout=PIPE)
         result, err = p.communicate()
 
-        pattern = re.compile('(.+)'+SEPARATOR + '(.+)' + SEPARATOR + '(.+)' + SEPARATOR)
+        pattern = re.compile(pattern_string)
         return re.findall(pattern, result)
 
 if __name__ == '__main__':
     TEST_PATH = "/home/lee/caf/base"
     gen=Generator(TEST_PATH)
-    commit_list = gen.get_commit_list()
-    print commit_list
+    commit_list = list(gen.get_commit_list())
+
+    final_list = []
+
+    count = 0;
+    print "len: ", str(len(commit_list))
+    for commit in commit_list:
+        cmd = ["git", "show" , commit[0], "--numstat", "--pretty=%h"]
+        p = Popen(cmd, stdout=PIPE)
+        result, err = p.communicate()
+
+        commit = list(commit)
+        pattern = re.compile('\n(\d+)\s+(\d+)\s+(.+)\s')
+
+        commit.append(re.findall(pattern, result))
+        final_list.append(commit)
+        count = count + len(commit[4])
+
+        #print result
+
+    for commit in final_list:
+        print commit
+        print "\n"
+
+
+    print "file count: ", str(count)
+
 
 
