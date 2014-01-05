@@ -52,11 +52,23 @@ class Generator:
 
         return self.add_modified_files_info(commit_list)
 
+    def print_commits_info(self, commit_list):
+        print "Total Commit Count: " + str(len(commit_list)) + "\n"
+
+        for commit in commit_list:
+            print "[ ", commit[0], " / ", commit[1], " / ", commit[2], " / ", commit[3], " ]"
+            for file in commit[4]:
+                print file
+            print "--------------------------------------------------------------------------------------------------\n"
+
 if __name__ == '__main__':
-    TEST_PATH = "/home/lee/caf/base"
-    gen=Generator(TEST_PATH)
+    TEST_GIT_PATH = "/home/lee/caf/base"
+
+    gen=Generator(TEST_GIT_PATH)
     commit_list = gen.get_commit_list()
-    print commit_list
+
+    #print commit_list
+    gen.print_commits_info(commit_list)
 
 
 
