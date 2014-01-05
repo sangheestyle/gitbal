@@ -17,6 +17,20 @@ class Generator:
         result = p.communicate()
         return result[0]
 
+    def add_modified_files_info(self, commit_list):
+        result_list = []
+
+        for commit in commit_list:
+            cmd = ["git", "show" , commit[0], "--numstat"]
+            p = Popen(cmd, stdout=PIPE)
+            result, err = p.communicate()
+            pattern = re.compile('\n(\d+)\s+(\d+)\s+(.+)\s')
+            commit = list(commit)
+            commit.append(re.findall(pattern, result))
+
+            result_list.append(commit)
+        return result_list
+
     def get_commit_list(self):
         os.chdir(self._path)
 
@@ -34,37 +48,20 @@ class Generator:
         result, err = p.communicate()
 
         pattern = re.compile(pattern_string)
-        return re.findall(pattern, result)
+        commit_list = re.findall(pattern, result)
+
+        return self.add_modified_files_info(commit_list)
 
 if __name__ == '__main__':
     TEST_PATH = "/home/lee/caf/base"
     gen=Generator(TEST_PATH)
-    commit_list = list(gen.get_commit_list())
-
-    final_list = []
-
-    count = 0;
-    print "len: ", str(len(commit_list))
-    for commit in commit_list:
-        cmd = ["git", "show" , commit[0], "--numstat", "--pretty=%h"]
-        p = Popen(cmd, stdout=PIPE)
-        result, err = p.communicate()
-
-        commit = list(commit)
-        pattern = re.compile('\n(\d+)\s+(\d+)\s+(.+)\s')
-
-        commit.append(re.findall(pattern, result))
-        final_list.append(commit)
-        count = count + len(commit[4])
-
-        #print result
-
-    for commit in final_list:
-        print commit
-        print "\n"
+    commit_list = gen.get_commit_list()
+    print commit_list
 
 
-    print "file count: ", str(count)
+
+
+
 
 
 
